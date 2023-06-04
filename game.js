@@ -1,4 +1,4 @@
-import {isValidInput} from "./helpers.js"
+import {isValidInput, findCurrentAsterixLocation} from "./helpers.js"
 import nextMove from "./nextMove.js"
 import promptSync from 'prompt-sync';
 
@@ -6,42 +6,37 @@ import promptSync from 'prompt-sync';
  const hat = "^";
 
 
-const game = (myField) => {
+const game = (myField, outerAsterix=null, innerAsterix=null) => {
     let isEndGame = false;
-    let currentOuterAsterix = null;
-    let currentInnerAsterix = null;
+    let currentOuterAsterix = outerAsterix;
+    let currentInnerAsterix = innerAsterix;
     let endMessage = "";
   
     myField.print()
-    const direction = prompt("Choose direction: ");
+    const direction = prompt("Choose a direction (d-down, u-up, r-right, l-left): ");
     const isValidDirection = isValidInput(direction);
   
     if (isValidDirection) {
-      for (let i = 0; i < myField.field.length; i++) {
-        if (currentOuterAsterix === null && currentInnerAsterix === null) {
-          for (let t = 0; t < myField.field[i].length; t++) {
-            if (myField.field[i][t] === "*") {
-              currentOuterAsterix = i;
-              currentInnerAsterix = t;
-              break;
-            }
-          }
-        } else {
-          break;
-        }
+      if (currentOuterAsterix === null && currentInnerAsterix === null){
+        //if no current asterix then find it
+        const currentAsterixLocation = findCurrentAsterixLocation(myField)
+        currentOuterAsterix = currentAsterixLocation.outerAsterix
+        currentInnerAsterix = currentAsterixLocation.innerAsterix
       }
-  
+      
       const nextUserMove = nextMove(
         direction,
         currentOuterAsterix,
         currentInnerAsterix,
         myField.field
       );
+
       const { nextAsterixOuterLoc, nextAsterixInnerLoc } = nextUserMove;
-      //   if next move is a hall end game and add message
-      console.log(`next move is: ${nextAsterixOuterLoc}, ${nextAsterixInnerLoc}`);
-  
-      console.log(`next move is: ${myField.field[nextAsterixOuterLoc]}`);
+      //update current asterix location, when moved direction
+      currentOuterAsterix = nextAsterixOuterLoc;
+      currentInnerAsterix = nextAsterixInnerLoc;
+
+      //   if next move is a hall, end game and add a message
       isEndGame =
         myField.field[nextAsterixOuterLoc][nextAsterixInnerLoc] === "O"
           ? true
@@ -51,7 +46,7 @@ const game = (myField) => {
         endMessage = "You fell in the hall. Sorry, you lost.";
       } else {
         isEndGame =
-          myField.field[nextAsterixOuterLoc][nextAsterixInnerLoc] === "^"
+          myField.field[nextAsterixOuterLoc][nextAsterixInnerLoc] === hat
             ? true
             : false;
         endMessage =
@@ -82,11 +77,11 @@ const game = (myField) => {
           { outer: currentOuterAsterix, inner: currentInnerAsterix },
           nextUserMove
         );
-        game(myField);
+        game(myField,currentOuterAsterix, currentInnerAsterix );
       }
     } else {
       console.log("please insert correct input");
-      game(myField);
+      game(myField, currentOuterAsterix, currentInnerAsterix);
     }
   };
 

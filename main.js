@@ -14,9 +14,6 @@ const fieldArray = [
 class Field {
   constructor(field) {
     this.field = field;
-    //this.print = this.print.bind(this)
-    //this.updateField = this.updateField.bind(this)
-    //this.generateField = this.generateField.bind(this)
   }
   print() {
     console.log(this.field.join("\n"));
